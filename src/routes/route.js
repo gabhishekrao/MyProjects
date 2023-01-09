@@ -13,6 +13,8 @@ router.post("/functionup/colleges", collegeController.createCollege);
 
 router.post("/functionup/interns", interController.createIntern);
 
+router.get("/functionup/collegeDetails", collegeController.getCollege);
+
 router.all("/*", (req, res) => {
   res.status(400).send({ msg: "plz send correct url" });
 });

@@ -1,5 +1,6 @@
 const express = require("express");
 const collegeModel = require("../models/college");
+const internModel = require("../models/intern");
 
 let validate = /^([a-z A-Z ]){2,100}$/;
 
@@ -61,37 +62,38 @@ const createCollege = async (req, res) => {
 };
 
 const getCollege = async (req, res) => {
-  let filter = req.body;
+  try {
+    let collegeName = req.query.collegeName;
 
-  collageName = req.query.collageName;
+    if (Object.keys(req.query).length === 0)
+      return res.status(400).send({ status: false, msg: "Please send query" });
 
-  if (!collageName)
-    return res.status(400).send({ msg: "plz enter valid filter" });
+    if (!collegeName)
+      return res.status(400).send({ msg: "plz enter valid filter" });
 
-  let checkCollege = await college
-    .findOne({ name: collageName })
-    .populate("interns");
+    let findCollege = await collegeModel
+      .findOne({
+        name: collegeName,
+        isDeleted: false,
+      })
+      .select({ name: 1, fullName: 1, logoLink: 1, _id: 0 });
 
-  if (!checkCollege) return res.status(404).send({ msg: "college not found" });
+    if (!findCollege) return res.status(404).send({ msg: "college not found" });
 
-  let collegeDetails = await college.find();
+    let internsss = await internModel.find({ collegeId: findCollege._id });
 
-  if (Object.keys(filter).length === 0)
-    return res.status(200).send(collegeDetails);
+    let newData = {
+      name: findCollege.name,
+      fullName: findCollege.fullName,
+      logoLink: findCollege.logoLink,
+      interns: internsss,
+    };
 
-  let checkStatus = checkCollege.interns.filter((x) => {
-    return x.isDeleted == false;
-  });
-
-  if (checkCollege.interns.length === 0)
-    res
-      .status(200)
-      .send({
-        result: checkCollege,
-        msg: "no interns applied for this college",
-      });
-
-  return res.status(200).send({ result: checkStatus });
+    return res.status(200).send({ result: newData });
+  } catch (err) {
+    console.log(err);
+    res.status(500).send({ status: false, Error: err.message });
+  }
 };
 
 module.exports = { createCollege, getCollege };

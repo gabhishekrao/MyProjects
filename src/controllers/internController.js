@@ -9,7 +9,8 @@ let validate = /^([a-z A-Z ]){2,30}$/;
 
 let validateMobile = /^\d{10}$/;
 
-let validateEmail = /^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
+let validateEmail =
+  /^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
 
 const createIntern = async (req, res) => {
   try {
@@ -40,9 +41,8 @@ const createIntern = async (req, res) => {
         .send({ status: false, msg: "intern Email already exist" });
     }
 
-    if (!mobile || !validateMobile.test(mobile)) return res.status(400).send({msg:"enter valid number"})
-
-
+    if (!mobile || !validateMobile.test(mobile))
+      return res.status(400).send({ msg: "enter valid number" });
 
     let checkMobile = await internModel.findOne({ mobile: mobile });
 
@@ -52,32 +52,20 @@ const createIntern = async (req, res) => {
         .send({ status: false, msg: "intern Mobile already exist" });
     }
 
+    if (!collegeName)
+      return res.status(400).send({ msg: "plz enter college name" });
 
-    if(!collegeName) return res.status(400).send({msg:"plz enter college name"})
+    let findCollege = await collegeModel.findOne({ name: collegeName });
 
+    if (!findCollege) return res.status(404).send({ msg: "college not found" });
 
-    let findCollege = await collegeModel.findOne({name:collegeName})
+    data.collegeId = findCollege._id.toString();
 
-    if(!findCollege) return res.status(404).send({msg:"college not found"})
+    let createData = await internModel
+      .create(data)
 
-    console.log(findCollege);
+    return res.status(201).send({ status: true, data: createData });
 
-    let collegeID = findCollege._id.toString()
-
-   
-
-    console.log(collegeID);
-
-    let newInternData = {
-      name : name,
-      email : email,
-      mobile : mobile,
-      collegeID : collegeID
-
-    }
-
-    console.log(newInternData);
-    return res.status(201).send({ status: true, data: newInternData });
   } catch (err) {
     console.log("Create intern", err.message);
 
