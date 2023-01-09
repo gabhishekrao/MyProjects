@@ -22,13 +22,8 @@ const internSchema = new mongoose.Schema({
     type: String,
     required: true,
     unique: true,
-    // minlength: 10,
-    // maxlength: 10,
     trim: true,
-    validate: {
-      validator: validator.isMobilePhone,
-      msg: "Please provide valid phone Number",
-    },
+  
   },
 
   collegeId: {

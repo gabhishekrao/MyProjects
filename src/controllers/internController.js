@@ -9,14 +9,13 @@ let validate = /^([a-z A-Z ]){2,30}$/;
 
 let validateMobile = /^\d{10}$/;
 
-let validateEmail =
-  /^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
+let validateEmail = /^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
 
 const createIntern = async (req, res) => {
   try {
     let data = req.body;
-
-    const { name, email, mobile, collegeId } = data;
+    console.log(data);
+    const { name, email, mobile, collegeName } = data;
 
     if (Object.keys(data).length == 0)
       return res.status(400).send("Please send data in the Body");
@@ -41,15 +40,9 @@ const createIntern = async (req, res) => {
         .send({ status: false, msg: "intern Email already exist" });
     }
 
-    if (!mobile || validateMobile.test(mobile)) {
-      return res.send((error) => {
-        if (error) {
-          return res
-            .status(400)
-            .send({ status: false, msg: "error in number" });
-        }
-      });
-    }
+    if (!mobile || !validateMobile.test(mobile)) return res.status(400).send({msg:"enter valid number"})
+
+
 
     let checkMobile = await internModel.findOne({ mobile: mobile });
 
@@ -59,23 +52,32 @@ const createIntern = async (req, res) => {
         .send({ status: false, msg: "intern Mobile already exist" });
     }
 
-    if (!collegeId || !isValidObjectId(collegeId)) {
-      return res
-        .status(400)
-        .send({ status: false, msg: "Please provide valid College Id" });
+
+    if(!collegeName) return res.status(400).send({msg:"plz enter college name"})
+
+
+    let findCollege = await collegeModel.findOne({name:collegeName})
+
+    if(!findCollege) return res.status(404).send({msg:"college not found"})
+
+    console.log(findCollege);
+
+    let collegeID = findCollege._id.toString()
+
+   
+
+    console.log(collegeID);
+
+    let newInternData = {
+      name : name,
+      email : email,
+      mobile : mobile,
+      collegeID : collegeID
+
     }
 
-    let college = await collegeModel.findById(collegeId);
-
-    if (!college) {
-      return res
-        .status(404)
-        .send({ status: false, msg: "This college is not exist" });
-    }
-
-    let createData = await internModel.create(data);
-
-    return res.status(201).send({ status: true, data: createData });
+    console.log(newInternData);
+    return res.status(201).send({ status: true, data: newInternData });
   } catch (err) {
     console.log("Create intern", err.message);
 
