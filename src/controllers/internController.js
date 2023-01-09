@@ -19,18 +19,18 @@ const createIntern = async (req, res) => {
     const { name, email, mobile, collegeName } = data;
 
     if (Object.keys(data).length == 0)
-      return res.status(400).send("Please send data in the Body");
+      return res.status(400).send({status: false, Error:"Please send data in the Body"});
 
     if (!name || !validate.test(name)) {
       return res
         .status(400)
-        .send({ status: false, msg: "Please provide valid Name" });
+        .send({ status: false, Error: "Please provide valid Name" });
     }
 
     if (!email || !validateEmail.test(email)) {
       return res
         .status(400)
-        .send({ status: false, msg: "Please provide valid Email" });
+        .send({ status: false, Error: "Please provide valid Email" });
     }
 
     let checkEmail = await internModel.findOne({ email: email });
@@ -38,26 +38,26 @@ const createIntern = async (req, res) => {
     if (checkEmail) {
       return res
         .status(400)
-        .send({ status: false, msg: "intern Email already exist" });
+        .send({ status: false, Error: "Intern Email already exist" });
     }
 
     if (!mobile || !validateMobile.test(mobile))
-      return res.status(400).send({ msg: "enter valid number" });
+      return res.status(400).send({status:false, Error: "Enter valid moblie number" });
 
     let checkMobile = await internModel.findOne({ mobile: mobile });
 
     if (checkMobile) {
       return res
         .status(400)
-        .send({ status: false, msg: "intern Mobile already exist" });
+        .send({ status: false, Error: "Intern Mobile already exist" });
     }
 
     if (!collegeName)
-      return res.status(400).send({ msg: "plz enter college name" });
+      return res.status(400).send({status: false, Error: "Please enter college name" });
 
     let findCollege = await collegeModel.findOne({ name: collegeName });
 
-    if (!findCollege) return res.status(404).send({ msg: "college not found" });
+    if (!findCollege) return res.status(404).send({status: false, Error: "College not found" });
 
     data.collegeId = findCollege._id.toString();
 
