@@ -16,7 +16,7 @@ const createIntern = async (req, res) => {
   try {
     let data = req.body;
 
-    const { name, email, mobile, collegeId } = data;
+    const { name, email, mobile, collegeName } = data;
 
     if (Object.keys(data).length == 0)
       return res.status(400).send("Please send data in the Body");
@@ -42,13 +42,13 @@ const createIntern = async (req, res) => {
     }
 
     if (!mobile || validateMobile.test(mobile)) {
-      return res.send((error) => {
-        if (error) {
-          return res
-            .status(400)
-            .send({ status: false, msg: "error in number" });
-        }
-      });
+      // return res.send((error) => {
+      //   if (error) {
+      //     return res
+      //       .status(400)
+      //       .send({ status: false, msg: "error in number" });
+      //   }
+      // });
     }
 
     let checkMobile = await internModel.findOne({ mobile: mobile });
@@ -59,22 +59,32 @@ const createIntern = async (req, res) => {
         .send({ status: false, msg: "intern Mobile already exist" });
     }
 
-    if (!collegeId || !isValidObjectId(collegeId)) {
+    if (!collegeName) {
       return res
         .status(400)
-        .send({ status: false, msg: "Please provide valid College Id" });
+        .send({ status: false, msg: "College name is mandatory" });
     }
 
-    let college = await collegeModel.findById(collegeId);
+    let college = await collegeModel
+      .findOne({ name: collegeName })
+      .populate("College", { _id: 1 });
+
+    console.log(college);
 
     if (!college) {
       return res
         .status(404)
         .send({ status: false, msg: "This college is not exist" });
     }
+    let obj = {};
 
-    let createData = await internModel.create(data);
+    obj.collegeId = college;
+    obj.name = name;
+    obj.email = email;
+    obj.mobile = mobile;
 
+    let createData = await internModel.create(obj);
+    console.log(obj);
     return res.status(201).send({ status: true, data: createData });
   } catch (err) {
     console.log("Create intern", err.message);
