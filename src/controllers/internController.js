@@ -15,7 +15,6 @@ let validateEmail =
 const createIntern = async (req, res) => {
   try {
     let data = req.body;
-    console.log(data);
     const { name, email, mobile, collegeName } = data;
 
     if (Object.keys(data).length == 0)
